@@ -51,20 +51,21 @@ app.post("/compose", function (req, res) {
   res.redirect("/");
 });
 
-app.get('/post', function (req, res) {
-  res.render('post');
+app.get("/post", function (req, res) {
+  res.render("post");
 });
 
-app.get('/posts/:topic', function (req, res) {
+app.get("/posts/:topic", function (req, res) {
   const requestedTitle = _.kebabCase(req.params.topic);
 
   posts.forEach(function (entry) {
-    let postTitle = _.kebabCase(entry.title);
+    const storedTitle = _.kebabCase(entry.title);
 
-    if (requestedTitle === postTitle) {
-      console.log('Match found!');
-    } else {
-      console.log('No results found.')
+    if (storedTitle === requestedTitle) {
+      res.render("post", {
+        title: entry.title,
+        content: entry.content,
+      });
     }
   });
 });
