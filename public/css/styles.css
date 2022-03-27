@@ -15,6 +15,14 @@
     color: #1abc9c !important;
 }
 
+label {
+    font-weight: bold;
+}
+
+input, textarea {
+    width: 100%;
+}
+
 .footer-padding {
 	padding-bottom: 60px;
 }
