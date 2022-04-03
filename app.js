@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 const _ = require("lodash");
 
 const homeStartingContent =
@@ -16,12 +17,21 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-const posts = [];
+mongoose.connect("mongodb://localhost:27017/blogDB");
+
+const postsSchema = {
+  title: String,
+  content: String,
+};
+
+const Post = mongoose.model("Post", postsSchema);
 
 app.get("/", function (req, res) {
-  res.render("home", {
-    homeContent: homeStartingContent,
-    newEntries: posts,
+  Post.find({}, function (err, foundEntries) {
+    res.render("home", {
+      homeContent: homeStartingContent,
+      newEntries: foundEntries,
+    });
   });
 });
 
@@ -42,31 +52,28 @@ app.get("/compose", function (req, res) {
 });
 
 app.post("/compose", function (req, res) {
-  const post = {
+  const newEntry = new Post({
     title: req.body.postTitle,
     content: req.body.postBody,
-  };
+  });
 
-  posts.push(post);
-  res.redirect("/");
+  newEntry.save(function (err) {
+    !err ? res.redirect("/") : console.log(err);
+  });
 });
 
 app.get("/post", function (req, res) {
   res.render("post");
 });
 
-app.get("/posts/:topic", function (req, res) {
-  const requestedTitle = _.kebabCase(req.params.topic);
+app.get("/posts/:postId", function (req, res) {
+  const requestedPostId = req.params.postId;
 
-  posts.forEach(function (entry) {
-    const storedTitle = _.kebabCase(entry.title);
-
-    if (storedTitle === requestedTitle) {
-      res.render("post", {
-        title: entry.title,
-        content: entry.content,
-      });
-    }
+  Post.findOne({ _id: requestedPostId }, function (err, entry) {
+    res.render("post", {
+      title: entry.title,
+      content: entry.content,
+    });
   });
 });
 
